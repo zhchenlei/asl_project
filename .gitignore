@@ -1,0 +1,76 @@
+# =========================
+# Python / ML project ignore
+# =========================
+
+# ---- Python bytecode ----
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+
+# ---- Virtual environments ----
+.venv/
+venv/
+ENV/
+.env
+
+# ---- Package/build ----
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# ---- Jupyter / notebooks ----
+.ipynb_checkpoints/
+
+# ---- OS / Editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ---- Gradio runtime/cache ----
+.gradio/
+
+# ---- Logs ----
+*.log
+
+# ---- Data (default: do not commit large datasets) ----
+data/**
+!data/.gitkeep
+!data/samples/**
+# allow a tiny README describing how to get data
+!data/README.md
+
+# ---- Training artifacts (default: keep only lightweight outputs) ----
+artifacts/**
+!artifacts/.gitkeep
+# keep figures, reports and evaluation outputs
+!artifacts/figures/**
+!artifacts/**/*.png
+!artifacts/**/*.jpg
+!artifacts/**/*.jpeg
+!artifacts/**/*.csv
+!artifacts/**/*.json
+!artifacts/**/*.txt
+!artifacts/**/*.md
+
+# ---- Model weights (usually large) ----
+*.h5
+*.keras
+*.pt
+*.pth
+*.onnx
+*.tflite
+
+# ---- TensorFlow / PyTorch misc ----
+*.ckpt
+*.pb
+saved_model/
+**/saved_model/
+**/variables/
