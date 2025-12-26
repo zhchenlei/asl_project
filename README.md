@@ -1,77 +1,104 @@
-# 美国手语图像识别（ASL CSV）- 可直接在 WSL2 Ubuntu 运行
+项目名称：
+基于深度学习的美国手语字母识别系统设计与实现
 
-本项目实现：
-- 基于 **ASL CSV 数据集**（28x28 灰度像素 + label 0~25）进行 **26 类字母识别**
-- 两种方案：**全连接网络（MLP）** 与 **卷积网络（CNN）**
-- 训练 / 测试 / 保存模型
-- 对**外部图片**（png/jpg）进行推理（自动转灰度、居中裁剪、缩放到 28x28）
+完整训练数据需额外下载kaggle链接在该文本中
+训练数据集链接：https://www.kaggle.com/datasets/grassknoted/asl-alphabet
 
-> 说明：本项目默认使用 `sign_mnist_train.csv` 与 `sign_mnist_test.csv`（常见的 ASL 字母 CSV 数据集）。
-> 你需要自己把数据放到 `data/raw/` 目录（见下方步骤）。
+一、项目简介
+
+本项目以美国手语字母（ASL Alphabet）识别为研究对象，基于深度学习与计算机视觉技术，设计并实现了一套手语字母自动识别系统。系统能够对静态手势图像进行分析，并输出对应的字母类别，实现 A–Z 共 26 个字母以及 del、nothing、space 三个特殊类别的识别。
+
+项目采用卷积神经网络（CNN）与迁移学习相结合的方法，在公开 ASL 手语字母数据集上进行训练与测试。通过引入 MobileNetV2 预训练模型作为特征提取网络，在有限计算资源条件下有效提升了模型的识别精度与训练效率。
+
+本项目既验证了深度学习技术在手语识别领域的可行性，也为相关人机交互与辅助交流系统的研究提供了实验基础。
+
+
+二、开发环境与运行平台
+
+1. 操作系统
+* Linux / Windows(WLS2)（实验过程中主要在 Linux 环境下完成）
+
+2. 开发语言
+* Python 3.11
+
+3. 深度学习框架
+* TensorFlow 2.x
+* Keras API
+
+4. 主要依赖库
+* numpy
+* Pillow
+* gradio（用于可视化演示）
+注：本项目在无 GPU 加速的 CPU 环境下完成模型训练与测试。
+
+三、数据集说明
+本项目使用 ASL Alphabet 公共数据集作为实验数据来源。
+数据集包含以下类别：
+* 英文字母 A–Z（26 类）
+* 特殊类别：del、nothing、space（3 类）
+共计 29 类手势图像。每一类包含多张手部静态姿态图片，背景相对统一，适合用于深度学习模型训练。
+在实验过程中，为兼顾训练效率与样本多样性，采用了间隔抽样方式（如每隔 15 张选取 1 张）构建训练集，并划分出独立验证集与测试集用于模型评估。
+
+四、模型设计与实现说明
+1. 模型结构
+   本项目最终采用基于迁移学习的神经网络模型方案。
+   模型以 MobileNetV2 作为特征提取主干网络，冻结其底层参数，仅在高层添加全连接分类层，实现对 29 类手语字母的分类。
+该结构在保证模型表达能力的同时，有效控制了模型参数规模，适合在计算资源受限的环境中运行。
+2. 模型训练
+   模型训练采用分阶段训练策略，包括：
+* 冻结特征提取层进行初始训练
+* 在模型稳定后进行适度微调
+训练过程中使用 Adam 优化器与多分类交叉熵损失函数，并通过验证集实时监控模型性能。
+3. 模型测试
+   训练完成后，模型在标准测试集上进行测试，整体识别准确率较高。
+   同时，项目还对自行拍摄的真实手势图像进行了测试，用于分析模型在复杂场景下的泛化能力。
+
+
+五、程序结构说明
+项目主要目录结构如下（示意）：
+* src/
+  * train_transfer.py    ：迁移学习模型训练脚本
+  * predict_asl.py       ：批量测试与预测脚本
+  * app_asl.py           ：图像识别演示程序
+  * utils.py             ：辅助工具函数
+* data/
+  * asl_alphabet_train/  ：训练数据集
+  * asl_alphabet_test/   ：测试数据集
+* artifacts/
+  * best.keras           ：训练得到的最优模型
+  * figures/             ：实验结果图像（训练曲线、混淆矩阵等）
+
+
+六、运行说明
+1. 模型训练
+   在项目根目录下执行：
+python -m src.train_transfer
+--train_dir data/asl_alphabet_train
+--test_dir data/asl_alphabet_test
+
+2. 模型测试
+python -m src.predict_asl
+--model artifacts/best.keras
+--image_dir data/asl_alphabet_test
+
+3. 可视化演示
+python src/app_asl.py
+运行后可通过浏览器上传手势图片，查看识别结果。
+
+
+七、实验结果说明
+实验结果表明，基于迁移学习的模型在标准测试集上具有较高的识别准确率，能够正确识别大多数手语字母样本。
+对于部分手势形态相似的字母，模型仍可能存在一定混淆，但正确类别通常出现在 Top-5 预测结果中。
+整体而言，模型性能满足课程设计的基本要求。
+
+
+八、注意事项
+1. 本项目主要针对静态手势图像，未涉及连续视频手语识别。
+2. 实际拍摄图像的识别效果受光照、背景和拍摄角度影响较大。
+3. 模型训练时间与数据规模、训练轮数密切相关。
 
 ---
 
-## 1. 环境搭建（WSL2 Ubuntu）
+九、说明
 
-### 1.1 安装系统依赖
-```bash
-sudo apt update
-sudo apt install -y python3 python3-venv python3-pip git unzip wget
-```
-
-### 1.2 创建虚拟环境并安装依赖
-```bash
-cd ~/projects
-mkdir -p asl && cd asl
-# 把本项目文件解压到这里（或 git clone）
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -U pip
-pip install -r requirements.txt
-```
-
----
-
-## 2. 数据准备
-
-把以下文件放到：
-- `data/raw/sign_mnist_train.csv`
-- `data/raw/sign_mnist_test.csv`
-
-CSV 格式要求：
-- 第一列为 `label`（0~25 对应 A~Z）
-- 其余 784 列为 28x28 灰度像素（0~255）
-
----
-
-## 3. 快速跑通（训练 + 测试）
-
-### 3.1 训练 MLP（全连接）
-```bash
-python -m src.train_mlp --data_dir data/raw --out_dir artifacts/mlp --epochs 20
-```
-
-### 3.2 训练 CNN（推荐）
-```bash
-python -m src.train_cnn --data_dir data/raw --out_dir artifacts/cnn --epochs 15
-```
-
-训练结束会输出：
-- 测试集 accuracy
-- 保存模型到 `artifacts/*/saved_model/`
-- 保存训练曲线与评估报告到 `artifacts/*/`
-
----
-
-## 4. 外部图片推理（单张/文件夹）
-
-### 4.1 单张图片
-```bash
-python -m src.predict_image --model_dir artifacts/cnn/saved_model --image path/to/your.jpg
-```
-
-### 4.2 批量图片（文件夹）
-```bash
-python -m src.predict_image --model_dir artifacts/cnn/saved_model --image_dir path/to/images --ext jpg png jpeg
-```
-
+本项目为课程设计实验用途，代码结构清晰，实验过程完整，相关理论分析与实验结果已在配套论文中进行了详细阐述。
